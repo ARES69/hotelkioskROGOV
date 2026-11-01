@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>MONE — каталог экранов (dev)</title>
+<style>
+  body{margin:0;background:#111;color:#eee;font-family:Inter,"Segoe UI",Arial,sans-serif;padding:28px}
+  h1{font-weight:300;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:#888;margin:0 0 26px}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.12em;color:#d9b768;margin:30px 0 12px}
+  a{display:inline-block;margin:0 8px 8px 0;padding:9px 14px;border-radius:10px;
+    background:#1e1e20;color:#eee;text-decoration:none;font-size:13px;border:1px solid #333}
+  a:hover{border-color:#d9b768;color:#d9b768}
+  a.demo{background:#d9b768;color:#141414;font-weight:600;border:none;padding:11px 18px}
+</style>
+</head>
+<body>
+<h1>МОНЕ · каталог экранов</h1>
+<p class="sub">Клик открывает kiosk.html с параметром превью. Полный демо-пробег — первая кнопка.</p>
+
+<a class="demo" href="kiosk.html?demo=1" target="_blank">▶ Полный демо-пробег (?demo=1)</a>
+
+<h2>Экраны (base)</h2>
+<a href="kiosk.html?screen=home" target="_blank">home</a>
+<a href="kiosk.html?screen=map" target="_blank">map</a>
+<a href="kiosk.html?screen=notice" target="_blank">notice</a>
+<a href="kiosk.html?screen=search" target="_blank">search</a>
+<a href="kiosk.html?screen=scan" target="_blank">scan</a>
+<a href="kiosk.html?screen=guests" target="_blank">guests</a>
+<a href="kiosk.html?screen=stay" target="_blank">stay</a>
+<a href="kiosk.html?screen=documents" target="_blank">documents</a>
+<a href="kiosk.html?screen=payment" target="_blank">payment ★</a>
+<a href="kiosk.html?screen=keys" target="_blank">keys</a>
+<a href="kiosk.html?screen=encoding" target="_blank">encoding</a>
+<a href="kiosk.html?screen=finish" target="_blank">finish</a>
+
+<h2>Состояния (visual states)</h2>
+<a href="kiosk.html?variant=home_ru" target="_blank">home_ru</a>
+<a href="kiosk.html?variant=home_en" target="_blank">home_en</a>
+<a href="kiosk.html?variant=map_1" target="_blank">map_1</a>
+<a href="kiosk.html?variant=map_2" target="_blank">map_2</a>
+<a href="kiosk.html?variant=notice" target="_blank">notice</a>
+<a href="kiosk.html?variant=search_default" target="_blank">search_default</a>
+<a href="kiosk.html?variant=search_not_found" target="_blank">search_not_found</a>
+<a href="kiosk.html?variant=scan_step_1" target="_blank">scan_step_1</a>
+<a href="kiosk.html?variant=scan_step_2" target="_blank">scan_step_2</a>
+<a href="kiosk.html?variant=scan_step_3" target="_blank">scan_step_3</a>
+<a href="kiosk.html?variant=scan_busy" target="_blank">scan_busy</a>
+<a href="kiosk.html?variant=guests_one" target="_blank">guests_one</a>
+<a href="kiosk.html?variant=guests_two" target="_blank">guests_two</a>
+<a href="kiosk.html?variant=stay_one" target="_blank">stay_one</a>
+<a href="kiosk.html?variant=stay_two" target="_blank">stay_two</a>
+<a href="kiosk.html?variant=documents_page_1" target="_blank">documents_page_1</a>
+<a href="kiosk.html?variant=documents_page_2" target="_blank">documents_page_2</a>
+<a href="kiosk.html?variant=documents_signed" target="_blank">documents_signed</a>
+<a href="kiosk.html?variant=payment_choice" target="_blank">payment_choice ★</a>
+<a href="kiosk.html?variant=payment_qr" target="_blank">payment_qr ★</a>
+<a href="kiosk.html?variant=payment_card" target="_blank">payment_card ★</a>
+<a href="kiosk.html?variant=keys_one" target="_blank">keys_one</a>
+<a href="kiosk.html?variant=keys_two_one" target="_blank">keys_two_one</a>
+<a href="kiosk.html?variant=keys_two_two" target="_blank">keys_two_two</a>
+<a href="kiosk.html?variant=encoding_step_1" target="_blank">encoding_step_1</a>
+<a href="kiosk.html?variant=encoding_step_2" target="_blank">encoding_step_2</a>
+<a href="kiosk.html?variant=encoding_step_3" target="_blank">encoding_step_3</a>
+<a href="kiosk.html?variant=encoding_step_4" target="_blank">encoding_step_4</a>
+<a href="kiosk.html?variant=finish_one" target="_blank">finish_one</a>
+<a href="kiosk.html?variant=finish_two" target="_blank">finish_two</a>
+<a href="kiosk.html?variant=preflight_pending" target="_blank">preflight_pending</a>
+
+<h2>Примеры ошибок (полный каталог — 209 кодов, ?error=CODE)</h2>
+<a href="kiosk.html?error=BOOT_BRIDGE_UNAVAILABLE" target="_blank">BOOT_BRIDGE_UNAVAILABLE</a>
+<a href="kiosk.html?error=BOOKING_NOT_FOUND" target="_blank">BOOKING_NOT_FOUND</a>
+<a href="kiosk.html?error=OCR_FIELD_MISSING" target="_blank">OCR_FIELD_MISSING</a>
+<a href="kiosk.html?error=OCR_DATA_CONFLICT" target="_blank">OCR_DATA_CONFLICT</a>
+<a href="kiosk.html?error=CARD_WRITE_FAILED" target="_blank">CARD_WRITE_FAILED</a>
+<a href="kiosk.html?error=PMS_ROOM_ASSIGNMENT_LOST" target="_blank">PMS_ROOM_ASSIGNMENT_LOST</a>
+<a href="kiosk.html?error=RECOVERY_REQUIRES_ADMIN" target="_blank">RECOVERY_REQUIRES_ADMIN</a>
+<a href="kiosk.html?error=SESSION_INACTIVITY_TIMEOUT" target="_blank">SESSION_INACTIVITY_TIMEOUT</a>
+
+<script>
+// Список всех 209 кодов можно вытащить из рантайма:
+fetch('kiosk.html').then(r=>r.text()).then(t=>{
+  const m=t.match(/ERROR_CODES\s*=\s*\[([\s\S]*?)\]/);
+  if(!m)return;const codes=[...m[1].matchAll(/"([A-Z0-9_]+)"/g)].map(x=>x[1]);
+  const uniq=[...new Set(codes)];if(uniq.length<5)return;
+  const h=document.createElement('h2');h.textContent='Все коды ошибок ('+uniq.length+')';
+  document.body.appendChild(h);
+  uniq.forEach(c=>{const a=document.createElement('a');
+    a.href='kiosk.html?error='+c;a.target='_blank';a.textContent=c;document.body.appendChild(a)});
+}).catch(()=>{});
+</script>
+</body>
+</html>

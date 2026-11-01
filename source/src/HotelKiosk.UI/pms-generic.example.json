@@ -1,0 +1,116 @@
+{
+  "Pms": {
+    "Provider": "logus",
+    "DisplayName": "Logus"
+  },
+
+  "Pms:Generic": {
+    "Vendor": "generic",
+    "BaseUrl": "http://localhost:8080/api",
+    "AuthMode": "basic",
+    "Login": "",
+    "Password": "",
+    "Token": "",
+    "TokenHeaderName": "X-Api-Key",
+    "TokenQueryName": "token",
+    "TokenPrefix": "",
+    "TimeoutSeconds": 20,
+    "DefaultHeaders": {},
+    "ErrorInBody": true,
+    "SuccessPath": "",
+    "ErrorMessagePath": "error.message",
+    "SendGuestDocuments": true,
+    "DocumentTypeCode": "PASSPORT",
+    "DocumentTypeName": "Паспорт гражданина РФ",
+    "PropertyId": "",
+    "PaymentTransactionCode": "",
+
+    "CancellationReasonCodes": {
+      "Compensation": "Compensation",
+      "GuestRequest": "GuestRequest",
+      "SystemError": "SystemError",
+      "Overbooking": "Overbooking"
+    },
+
+    "Authenticate": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "CheckIn": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "Cancel": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "AddPayment": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "Arrivals": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "ReservationDetails": {
+      "Enabled": true,
+      "Method": "GET",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "UpsertGuest": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "AttachGuest": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    },
+
+    "Ping": {
+      "Enabled": true,
+      "Method": "GET",
+      "Path": "",
+      "Body": {},
+      "Paths": {},
+      "Headers": {}
+    }
+  }
+}

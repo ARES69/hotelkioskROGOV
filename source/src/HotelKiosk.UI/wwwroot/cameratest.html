@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Проверка камеры киоска</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#141416;color:#f2f0ec;
+       font:16px/1.45 "Segoe UI",system-ui,sans-serif}
+  header{padding:18px 24px 10px}
+  h1{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .muted{color:#a9a7a2;margin:0}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;padding:14px 24px 24px}
+  .stage{position:relative;background:#0c0c0e;border-radius:16px;overflow:hidden;
+         min-height:420px;display:grid;place-items:center}
+  video{width:100%;height:auto;display:block;transform:scaleX(-1)}
+  .frame{position:absolute;inset:0;pointer-events:none;
+         background:radial-gradient(ellipse 34% 54% at 50% 46%,
+           rgba(0,0,0,0) 0 60%, rgba(0,0,0,.45) 80% 100%)}
+  .oval{position:absolute;left:50%;top:46%;width:min(58%,430px);aspect-ratio:3/4;
+        transform:translate(-50%,-50%);border-radius:50%/44%;
+        border:4px solid #d4b363;box-shadow:0 0 34px rgba(212,179,99,.35)}
+  aside{display:flex;flex-direction:column;gap:12px}
+  button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid #3a3a3e;
+         background:#232327;color:#f2f0ec;cursor:pointer}
+  button:hover:not(:disabled){background:#2c2c31}
+  button:disabled{opacity:.45;cursor:default}
+  button.primary{background:#d4b363;color:#171719;border-color:#d4b363;font-weight:700}
+  pre{margin:0;padding:12px;border-radius:10px;background:#0c0c0e;border:1px solid #26262a;
+      font:13px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;max-height:340px;overflow:auto}
+  .ok{color:#4fd08a}.bad{color:#ff8b7a}.warn{color:#e8c05a}
+</style>
+</head>
+<body>
+<header>
+  <h1>Проверка камеры</h1>
+  <p class="muted">Диагностика перед установкой на киоск: разрешение, кадр, контраст, замер яркости.</p>
+</header>
+<main>
+  <div class="stage" id="stage">
+    <video id="video" playsinline muted autoplay></video>
+    <div class="frame"><div class="oval"></div></div>
+  </div>
+  <aside>
+    <button id="start" class="primary">Открыть камеру</button>
+    <button id="shot" disabled>Снять кадр</button>
+    <button id="probe" disabled>Замерить кадр (как в киоске)</button>
+    <pre id="log">ожидание…</pre>
+  </aside>
+</main>
+<script>
+"use strict";
+// Страница диагностики живёт автономно: никакого моста C# здесь нет,
+// проверяется ровно та цепочка, что работает в киоске — getUserMedia +
+// рисование в canvas + замеры кадра из KioskCamera.probeFrame.
+const video=document.getElementById("video");
+const logEl=document.getElementById("log");
+const lines=[];
+function log(text,cls){
+  lines.push(cls?"["+cls+"] "+text:text);
+  logEl.textContent=lines.join("\n");
+  publish();
+}
+function setEnabled(on){document.getElementById("shot").disabled=!on;document.getElementById("probe").disabled=!on;}
+
+// Отчёт наружу: снимок экрана из WebView2 получить нельзя (отдельная
+// поверхность композитинга). C# забирает состояние через ExecuteScriptAsync,
+// поэтому держим его в объекте и отдаём по запросу. postMessage — запасной
+// путь, если ExecuteScript недоступен.
+function publish(){
+  const payload={
+    report:lines.join("\n"),
+    state:window.KIOSK_CAMERA_STATE||"idle",
+    device:window.KIOSK_CAMERA_DEVICE||null,
+    width:video.videoWidth||0,
+    height:video.videoHeight||0,
+    bytes:window.KIOSK_CAMERA_BYTES||0,
+    luma:window.KIOSK_CAMERA_LUMA==null?null:+window.KIOSK_CAMERA_LUMA.toFixed(1),
+    contrast:window.KIOSK_CAMERA_CONTRAST==null?null:+window.KIOSK_CAMERA_CONTRAST.toFixed(1)
+  };
+  window.KIOSK_CAMERA_REPORT=JSON.stringify(payload);
+  try{window.chrome.webview.postMessage(window.KIOSK_CAMERA_REPORT);}catch(_){}
+}
+
+let stream=null;
+document.getElementById("start").onclick=async()=>{
+  const cfg=window.KIOSK_CONFIG&&window.KIOSK_CONFIG.camera||{};
+  const width=Number(cfg.width)||1280, height=Number(cfg.height)||960;
+  document.getElementById("start").disabled=true;
+  log("Запрашиваю getUserMedia: "+width+"x"+height+", facingMode=user", "warn");
+  log("Контекст: protocol="+location.protocol+", secure="+window.isSecureContext+
+      ", mediaDevices="+(navigator.mediaDevices?"есть":"нет"),"warn");
+  publish();
+
+  // Таймаут: без него getUserMedia может висеть вечно (например, если
+  // разрешение не дошло), и диагностика молча ничего не скажет
+  let stream=null;
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)
+      throw new Error("getUserMedia недоступен");
+
+    stream=await Promise.race([
+      navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{facingMode:"user",width:{ideal:width},height:{ideal:height}}
+      }),
+      new Promise((_,reject)=>setTimeout(
+        ()=>reject(new Error("Таймаут 15 с: разрешение не пришло")),15000))
+    ]);
+
+    video.srcObject=stream;video.muted=true;await video.play();
+    const track=stream.getVideoTracks()[0];
+    const s=track.getSettings?track.getSettings():{};
+    window.KIOSK_CAMERA_STATE="open";
+    window.KIOSK_CAMERA_DEVICE=track.label||s.deviceId||null;
+    log("Поток открыт.","ok");
+    log("Трек: "+track.label+" ("+track.readyState+")");
+    log("Разрешение: "+video.videoWidth+"x"+video.videoHeight+
+        "  (запрошено "+width+"x"+height+")",video.videoWidth?"ok":"bad");
+    if(s.deviceId)log("deviceId: "+s.deviceId);
+    if(s.frameRate)log("Частота: "+Math.round(s.frameRate)+" fps");
+    setEnabled(true);
+    window.KIOSK_CAMERA_READY=true;
+    // Первичный замер сразу: без него отчёт останется пустым
+    runProbe();
+  }catch(err){
+    window.KIOSK_CAMERA_STATE="error:"+(err.name||err.constructor.name);
+    log("Ошибка доступа: "+(err.name||"Error")+" — "+err.message,"bad");
+    if(err.name==="NotAllowedError")
+      log("Разрешение не выдано. В приложении оно выдаётся автоматически (PermissionRequested).","warn");
+    else if(/Таймаут/.test(err.message))
+      log("Браузер не ответил. Проверьте, не занята ли камера другим приложением.","warn");
+    else
+      log("Камера не найдена или занята другим приложением.","warn");
+    document.getElementById("start").disabled=false;
+  }
+  publish();
+};
+
+// Те же замеры, что делает KioskCamera перед съёмкой
+const PW=64,PH=48;
+let probeCanvas=null,lastSig=null,lastAt=0;
+function probe(){
+  if(!probeCanvas){probeCanvas=document.createElement("canvas");probeCanvas.width=PW;probeCanvas.height=PH;}
+  const ctx=probeCanvas.getContext("2d",{willReadFrequently:true});
+  ctx.drawImage(video,0,0,PW,PH);
+  const d=ctx.getImageData(0,0,PW,PH).data;
+  const luma=new Array(PW*PH);let sum=0,sumSq=0,n=0;
+  for(let i=0,p=0;i<d.length;i+=4,p++){
+    const l=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+    luma[p]=l;sum+=l;sumSq+=l*l;n++;
+  }
+  const mean=sum/n;
+  return{luma:mean,contrast:Math.sqrt(Math.max(0,sumSq/n-mean*mean)),sig:luma};
+}
+
+function runProbe(){
+  const p=probe();
+  window.KIOSK_CAMERA_LUMA=p.luma;
+  window.KIOSK_CAMERA_CONTRAST=p.contrast;
+  log("— замер кадра —");
+  log("Яркость: "+p.luma.toFixed(1)+" / 255"+
+      (p.luma<12?"  СЛИШКОВ ТЕМНО (крышка закрыта или нет света)":""),p.luma<12?"bad":"ok");
+  log("Контраст: "+p.contrast.toFixed(1)+
+      (p.contrast<6?"  ПУСТОЙ ФОН (перед камерой никого нет)":""),p.contrast<6?"bad":"ok");
+  if(p.sig&&lastSig&&Date.now()-lastAt<800){
+    let moved=0;
+    for(let i=0;i<p.sig.length;i+=4)if(Math.abs(p.sig[i]-lastSig[i])>18)moved++;
+    const ratio=moved/(p.sig.length/4);
+    log("Движение: "+(ratio*100).toFixed(0)+"%"+(ratio>0.14?"  ГОСТЬ ЕЩЁ ДВИГАЕТСЯ":"  статично"),
+        ratio>0.14?"warn":"ok");
+  }else{
+    log("Движение: нет данных (нужен повторный замер в течение секунды)","warn");
+  }
+  lastSig=p.sig;lastAt=Date.now();
+  publish();
+}
+
+document.getElementById("probe").onclick=runProbe;
+
+document.getElementById("shot").onclick=()=>{
+  const cfg=window.KIOSK_CONFIG&&window.KIOSK_CONFIG.camera||{};
+  const q=Number(cfg.jpegQuality)||0.9;
+  const c=document.createElement("canvas");
+  c.width=video.videoWidth;c.height=video.videoHeight;
+  c.getContext("2d").drawImage(video,0,0,c.width,c.height);
+  const url=c.toDataURL("image/jpeg",q);
+  const b64=url.slice(url.indexOf(",")+1);
+  window.KIOSK_CAMERA_BYTES=b64.length;
+  log("— снимок —");
+  log("Кадр: "+c.width+"x"+c.height+", JPEG q="+q, "ok");
+  log("Размер base64: "+(b64.length/1024).toFixed(0)+" КБ",
+      b64.length>2*1024*1024?"bad":"ok");
+  // Показываем превью того, что реально уйдёт в OCR
+  const img=new Image();img.src=url;
+  document.getElementById("stage").prepend(img);
+  img.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000";
+  publish();
+};
+
+// Автозапуск: кнопка нужна для переподключения, но в проверке ждать
+// нажатия нельзя — сразу открываем камеру
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    document.getElementById("start").click();
+    // Снимок и повторный замер — чтобы в отчёт попали размер кадра в base64
+    // и оценка движения, а не только факт открытия потока
+    setTimeout(()=>document.getElementById("probe").click(),1200);
+    setTimeout(()=>document.getElementById("shot").click(),2000);
+  },400);
+});
+
+window.addEventListener("beforeunload",()=>{
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+});
+</script>
+</body>
+</html>

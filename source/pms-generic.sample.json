@@ -1,0 +1,219 @@
+{
+  "_комментарий": [
+    "ПРИМЕР подключения киоска к PMS без нашего SDK (Shelter, 1С:Отель, WinHotel, «Проф-Отель» и т.п.).",
+    "",
+    "Как пользоваться:",
+    " 1. Поставить Pms:Provider = generic (и Pms:DisplayName = <название PMS> для UI и логов).",
+    " 2. Заполнить секцию Pms:Generic по документации вашей PMS.",
+    " 3. Не описанную операцию просто НЕ заполнять — киоск скажет «PMS не поддерживает»,",
+    "    а не получит 404. Так отключаются, например, список заездов и паспортные данные.",
+    "",
+    "Все значения вида @{...} — плейсхолдеры. Формат суммы: @{amount:0.00} → 5000.00 (точка).",
+    "Плейсхолдеры брони в Path URL-экранируются автоматически (кириллица, пробелы).",
+    "",
+    "ВНИМАНИЕ: этот пример — иллюстрация формата, а не боевой конфиг.",
+    "URL, имена полей и способ авторизации нужно взять из документации ВАШЕЙ PMS."
+  ],
+
+  "Pms": {
+    "Provider": "generic",
+    "DisplayName": "Пример PMS"
+  },
+
+  "Pms:Generic": {
+    "Vendor": "example-pms",
+
+    "BaseUrl": "https://pms.example.ru/api/v2",
+
+    "AuthMode": "basic",
+    "Login": "KIOSK_USER",
+    "Password": "",
+
+    "Token": "",
+    "TokenHeaderName": "X-Api-Key",
+    "TokenQueryName": "token",
+    "TokenPrefix": "",
+
+    "TimeoutSeconds": 20,
+
+    "DefaultHeaders": {
+      "X-Hotel-Id": "1"
+    },
+
+    "ErrorInBody": true,
+    "SuccessPath": "success",
+    "ErrorMessagePath": "error.message",
+
+    "SendGuestDocuments": false,
+    "DocumentTypeCode": "PASSPORT",
+    "DocumentTypeName": "Паспорт гражданина РФ",
+    "PropertyId": "1",
+    "PaymentTransactionCode": "CASHLESS",
+
+    "CancellationReasonCodes": {
+      "Compensation": "COMPENSATION",
+      "GuestRequest": "GUEST_REQUEST",
+      "SystemError": "SYSTEM_ERROR",
+      "Overbooking": "OVERBOOKING"
+    },
+
+    "Authenticate": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/search",
+
+      "Body": {
+        "reservationNumber": "@{reservationNo}",
+        "surname": "@{key}",
+        "confirmationMode": "@{confirmationMode}"
+      },
+
+      "Headers": {
+        "Idempotency-Key": "@{reservationNo}"
+      },
+
+      "Paths": {
+        "ReservationId": "data.reservation.id",
+        "ReservationRoomCode": "data.reservation.room.number",
+        "ReservationRoomTypeCode": "data.reservation.roomType.code",
+        "ReservationGuestsCount": "data.reservation.guestsCount",
+        "ReservationArrival": "data.reservation.arrivalDate",
+        "ReservationDeparture": "data.reservation.departureDate",
+        "ReservationPrice": "data.reservation.totalAmount",
+
+        "GuestId": "data.guest.id",
+        "GuestFirstName": "data.guest.firstName",
+        "GuestLastName": "data.guest.lastName",
+        "GuestMiddleName": "data.guest.middleName",
+        "GuestBirthDate": "data.guest.birthDate",
+
+        "Currency": "data.currency",
+
+        "AvailableRooms": "data.availableRooms",
+        "RoomCode": "number",
+        "RoomTypeCode": "roomType.code",
+        "RoomFloor": "floor",
+        "RoomBuilding": "building",
+        "RoomOccupied": "occupied",
+
+        "RoomTypes": "data.roomTypes",
+        "RoomTypeName": "name"
+      }
+    },
+
+    "CheckIn": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/@{reservationId}/checkin",
+
+      "Body": {
+        "roomNumber": "@{roomNo}"
+      },
+
+      "Paths": {}
+    },
+
+    "Cancel": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/@{reservationId}/cancel",
+
+      "Body": {
+        "reasonCode": "@{cancellationReason}"
+      },
+
+      "Paths": {}
+    },
+
+    "AddPayment": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/@{reservationId}/payments",
+
+      "Body": {
+        "amount": "@{amount:0.00}",
+        "transactionCode": "@{transactionCode}",
+        "externalId": "@{uniqueId}"
+      },
+
+      "Paths": {}
+    },
+
+    "Arrivals": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/arrivals",
+
+      "Body": {
+        "date": "@{date}",
+        "propertyId": "@{propertyId}"
+      },
+
+      "Paths": {
+        "ArrivalsArray": "data",
+        "ArrivalGenericNo": "number",
+        "ArrivalGuid": "id",
+        "ArrivalLastName": "guest.lastName",
+        "ArrivalFirstName": "guest.firstName",
+        "ArrivalArrivalDate": "arrivalDate",
+        "ArrivalDepartureDate": "departureDate",
+        "ArrivalStayAmount": "stayAmount",
+        "ArrivalBalance": "balance"
+      }
+    },
+
+    "ReservationDetails": {
+      "Enabled": true,
+      "Method": "GET",
+      "Path": "reservations/@{reservationId}",
+      "Body": {},
+
+      "Paths": {
+        "ReservationGuid": "data.id",
+        "ReservationId": "data.number"
+      }
+    },
+
+    "UpsertGuest": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "guests",
+
+      "Body": {
+        "lastName": "@{lastName}",
+        "firstName": "@{firstName}",
+        "middleName": "@{middleName}",
+        "birthDate": "@{birthDate}",
+        "documentNumber": "@{documentNumber}",
+        "documentSeries": "@{documentSeries}",
+        "documentTypeCode": "@{docTypeCode}"
+      },
+
+      "Paths": {
+        "PersonId": "data.personId",
+        "ProfileGuid": "data.profileGuid"
+      }
+    },
+
+    "AttachGuest": {
+      "Enabled": true,
+      "Method": "POST",
+      "Path": "reservations/@{reservationGuid}/guests",
+
+      "Body": {
+        "personId": "@{personId}",
+        "isMain": true
+      },
+
+      "Paths": {}
+    },
+
+    "Ping": {
+      "Enabled": true,
+      "Method": "GET",
+      "Path": "health",
+      "Body": {},
+      "Paths": {}
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch UI (WPF Kiosk)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "project": "src/HotelKiosk.UI/HotelKiosk.UI.csproj"
+        },
+        {
+            "name": "Run Tests",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "project": "tests/HotelKiosk.Tests/HotelKiosk.Tests.csproj"
+        }
+    ]
+}

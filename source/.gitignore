@@ -1,0 +1,12 @@
+bin/
+obj/
+*.user
+.vs/
+logs/
+*.log
+
+# Конфигурация с секретами — хранится локально, не в git
+appsettings.json
+appsettings.*.json
+# Шаблон для разработчиков — отслеживается в git
+!appsettings.example.json

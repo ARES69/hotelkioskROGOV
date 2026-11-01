@@ -1,0 +1,40 @@
+# Сборка
+bin/
+obj/
+publish/
+publish-agent/
+
+# Артефакты запуска киоска
+logs/
+*.log
+*.txt.bak
+HotelKiosk.UI.exe.WebView2/
+
+# IDE
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Конфигурация с секретами и локальные адреса стенда — только на диске
+appsettings.json
+appsettings.local.json
+appsettings.*.json
+!appsettings.example.json
+
+# Отчёты самопроверки
+selftest-*.txt
+cameratest-result.json
+
+# Результаты тестов и покрытие
+coverage/
+TestResults/
+*.trx
+
+# Чужие материалы: старые сборки, профили браузера, ~195 МБ
+доп материалы/
+
+# Служебное
+Thumbs.db
+desktop.ini

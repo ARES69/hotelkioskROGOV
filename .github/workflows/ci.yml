@@ -1,0 +1,68 @@
+name: CI
+
+# Киоск — WPF-приложение (HotelKiosk.UI, net9.0-windows), поэтому раннер
+# Windows: на ubuntu-latest проект с UseWPF не собирается.
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        working-directory: source
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Версия согласована с source/global.json: сборка net9.0 идёт
+          # SDK 9, а не случайным 10.x.
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore HotelKiosk.sln
+
+      - name: Build
+        run: dotnet build HotelKiosk.sln --no-restore --configuration Release
+
+      - name: Test
+        # Одна строка: на Windows раннере shell — PowerShell, перенос "\"
+        # в конце строки здесь не работает.
+        run: >
+          dotnet test HotelKiosk.sln --no-build --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          /p:CollectCoverage=true
+          /p:CoverletOutputFormat=cobertura
+          /p:CoverletOutput=${{ github.workspace }}/coverage/
+
+      - name: Publish smoke test
+        # Публикация ломается отдельно от сборки (копирование wwwroot,
+        # appsettings, зависимостей) — проверяем её тоже.
+        run: >
+          dotnet publish src/HotelKiosk.UI/HotelKiosk.UI.csproj
+          --configuration Release --no-restore
+          --output ${{ runner.temp }}/publish-ui
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: source/**/TestResults/*.trx
+          retention-days: 7
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ${{ github.workspace }}/coverage/coverage.cobertura.xml
+          retention-days: 7
