@@ -23,6 +23,11 @@ appsettings.local.json
 appsettings.*.json
 !appsettings.example.json
 
+# Исключение: шаблоны, без которых чистая копия не собирается и не запускается.
+# Пароли в них пустые; боевые значения живут в appsettings.local.json.
+!source/src/HotelKiosk.UI/appsettings.json
+!source/src/HotelKiosk.LocalAgent/appsettings.json
+
 # Отчёты самопроверки
 selftest-*.txt
 cameratest-result.json

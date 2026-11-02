@@ -10,3 +10,8 @@ appsettings.json
 appsettings.*.json
 # Шаблон для разработчиков — отслеживается в git
 !appsettings.example.json
+
+# Шаблоны, без которых чистая копия не собирается и не запускается.
+# Пароли в них пустые; боевые значения — в appsettings.local.json.
+!src/HotelKiosk.UI/appsettings.json
+!src/HotelKiosk.LocalAgent/appsettings.json
