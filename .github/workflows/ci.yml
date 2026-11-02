@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           # Версия согласована с source/global.json: сборка net9.0 идёт
           # SDK 9, а не случайным 10.x.
