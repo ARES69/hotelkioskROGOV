@@ -963,6 +963,15 @@ const state={
   guests:[createGuestOne()]
 };
 
+/* Вторая бронь из демо-списка «Сегодня заезжают». Без неё выбор Петрова
+   приводил к BOOKING_NOT_FOUND: список предлагал гостя, которого мок
+   поиска не знал. */
+const DEMO_BOOKING_TWO={
+  id:"1146577",code:"MN-48310",room:"312",categoryRu:"Стандарт с видом на город",
+  categoryEn:"Standard City View",arrival:"18.07.2026 15:00",departure:"21.07.2026 12:00",
+  company:'ООО "Бронирование гостиниц"',total:"54 000 ₽",due:"0 ₽"
+};
+
 function createGuestOne(){
   return{
     fio:"Иванов Александр Сергеевич",gender:"Мужской",citizenship:"Россия",
@@ -2317,8 +2326,13 @@ const UNSAFE_CODES=new Set([
     if(action==="system.preflight")return{ready:true,devices:{logus:true,vision:true,crt:true,regula:true}};
     if(action==="booking.search"){
       const code=safeString(payload.code).toUpperCase(),surname=safeString(payload.surname).toLowerCase();
-      if(code!=="MN-48291"&&surname!=="иванов")throw new KioskFailure("BOOKING_NOT_FOUND");
-      return{found:true,booking:clone(state.booking)};
+      // Демо знает обе брони из списка заездов. Код важнее фамилии:
+      // гость мог выбрать строку, где заполнены оба поля.
+      const byCode=code==="MN-48310"?true:code==="MN-48291"?false:null;
+      const bySurname=surname==="петров"||surname==="petrov"?true:surname==="иванов"||surname==="ivanov"?false:null;
+      const second=byCode!==null?byCode:bySurname;
+      if(second===null)throw new KioskFailure("BOOKING_NOT_FOUND");
+      return{found:true,booking:clone(second?DEMO_BOOKING_TWO:state.booking)};
     }
     if(action==="booking.arrivals"){
       // Демо-список: две записи на сегодня
@@ -2685,7 +2699,7 @@ const UNSAFE_CODES=new Set([
       const booking=sanitizeBooking(result.booking);
       if(code&&booking.code.toUpperCase()!==code)throw new KioskFailure("BOOKING_OWNER_MISMATCH");
       const blocked=bookingFailure(booking);if(blocked)throw new KioskFailure(blocked);
-      state.booking=booking;state.guests=[DEMO?createGuestOne():emptyGuest()];state.activeGuest=0;state.scanPurpose="primary";state.scanStep=0;
+      state.booking=booking;state.guests=[DEMO?(booking.code==="MN-48310"?createGuestTwo():createGuestOne()):emptyGuest()];state.activeGuest=0;state.scanPurpose="primary";state.scanStep=0;
       engine.scanDraft={};engine.scanDocumentKey=null;engine.scanMode="new";updateScanCopy();legacy.navigate("scan");
     }catch(error){raise(error,"BOOKING_NOT_FOUND",{route:"booking"})}
     finally{engine.busy.delete("booking");setBusy(button,false)}
